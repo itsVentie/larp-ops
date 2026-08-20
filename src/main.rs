@@ -1,4 +1,5 @@
 use clap::{Args, Parser, Subcommand};
+use shared_types::OutputEvent;
 
 #[derive(Parser)]
 #[command(name = "larp", version, about = "Orchestrator")]
@@ -57,15 +58,30 @@ async fn main() {
                 source,
                 critical_only,
             } => {
-                println!(
-                    "[*] Running EVTX triage on: {} (critical_only: {})",
-                    source, critical_only
+                let event = OutputEvent::new(
+                    "dfir-evtx",
+                    "INFO",
+                    serde_json::json!({
+                        "action": "triage_start",
+                        "source": source,
+                        "critical_only": critical_only
+                    }),
                 );
+                event.print_ndjson();
             }
         },
         Commands::Recon(recon) => match recon.tool {
             ReconTools::Scan { target, ports } => {
-                println!("[*] Running Port Scan on: {} (ports: {})", target, ports);
+                let event = OutputEvent::new(
+                    "recon-net",
+                    "INFO",
+                    serde_json::json!({
+                        "action": "scan_start",
+                        "target": target,
+                        "ports": ports
+                    }),
+                );
+                event.print_ndjson();
             }
         },
     }
