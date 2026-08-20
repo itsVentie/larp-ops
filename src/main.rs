@@ -1,4 +1,7 @@
+mod config;
+
 use clap::{Args, Parser, Subcommand};
+use config::AppConfig;
 use shared_types::OutputEvent;
 
 #[derive(Parser)]
@@ -50,6 +53,14 @@ pub enum ReconTools {
 
 #[tokio::main]
 async fn main() {
+    let config = match AppConfig::load() {
+        Ok(cfg) => cfg,
+        Err(err) => {
+            eprintln!("[!] Config load warning: {}", err);
+            AppConfig::default()
+        }
+    };
+
     let cli = Cli::parse();
 
     match cli.command {
@@ -58,13 +69,20 @@ async fn main() {
                 source,
                 critical_only,
             } => {
+                let evtx_binary = config
+                    .tools
+                    .get("evtx_dump")
+                    .map(|t| t.path.as_str())
+                    .unwrap_or("evtx_dump.exe");
+
                 let event = OutputEvent::new(
                     "dfir-evtx",
                     "INFO",
                     serde_json::json!({
                         "action": "triage_start",
                         "source": source,
-                        "critical_only": critical_only
+                        "critical_only": critical_only,
+                        "binary_used": evtx_binary
                     }),
                 );
                 event.print_ndjson();
@@ -72,13 +90,20 @@ async fn main() {
         },
         Commands::Recon(recon) => match recon.tool {
             ReconTools::Scan { target, ports } => {
+                let scanner_binary = config
+                    .tools
+                    .get("scanner")
+                    .map(|t| t.path.as_str())
+                    .unwrap_or("nmap.exe");
+
                 let event = OutputEvent::new(
                     "recon-net",
                     "INFO",
                     serde_json::json!({
                         "action": "scan_start",
                         "target": target,
-                        "ports": ports
+                        "ports": ports,
+                        "binary_used": scanner_binary
                     }),
                 );
                 event.print_ndjson();
