@@ -86,7 +86,7 @@ larp-ops/
 
 ## Roadmap
 
-* [ ] Cargo workspace initialization and core CLI parser (`clap`).
+* [x] Cargo workspace initialization and core CLI parser (`clap`).
 * [ ] Process execution manager (`std::process::Command` / `tokio::process`).
 * [ ] Global configuration loader (`config.yaml`).
 * [ ] NDJSON logging and stdout formatting layer.
