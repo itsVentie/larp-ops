@@ -1,0 +1,9 @@
+[package]
+name = "dfir-evtx"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+shared-types = { path = "../shared-types" }
+anyhow = "1.0"
+tokio = { version = "1.35", features = ["full"] }
