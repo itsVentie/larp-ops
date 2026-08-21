@@ -91,7 +91,7 @@ larp-ops/
 * [x] Global configuration loader (`config.yaml`).
 * [x] NDJSON logging and stdout formatting layer.
 
-* [ ] DFIR artifact parsing wrappers (EVTX, RAM triage).
+* [x] DFIR artifact parsing wrappers (EVTX, RAM triage).
 * [ ] Reconnaissance tool wrappers (Go/Rust port scanners).
 * [ ] Inter-module piping (streaming stdout to stdin).
 * [ ] YAML playbook parser for multi-step tasks.
