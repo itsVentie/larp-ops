@@ -92,7 +92,7 @@ larp-ops/
 * [x] NDJSON logging and stdout formatting layer.
 
 * [x] DFIR artifact parsing wrappers (EVTX, RAM triage).
-* [ ] Reconnaissance tool wrappers (Go/Rust port scanners).
+* [x] Reconnaissance tool wrappers (Go/Rust port scanners).
 * [ ] Inter-module piping (streaming stdout to stdin).
 * [ ] YAML playbook parser for multi-step tasks.
 
