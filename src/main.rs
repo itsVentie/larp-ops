@@ -1,7 +1,9 @@
 mod config;
+mod playbook;
 
 use clap::{Args, Parser, Subcommand};
 use config::AppConfig;
+use playbook::Playbook;
 use shared_types::OutputEvent;
 
 #[derive(Parser)]
@@ -16,14 +18,19 @@ enum Commands {
     Dfir(DfirArgs),
     Recon(ReconArgs),
     Pipe(PipeArgs),
+    Playbook(PlaybookArgs),
+}
+
+#[derive(Args)]
+pub struct PlaybookArgs {
+    #[arg(short, long)]
+    file: String,
 }
 
 #[derive(Args)]
 pub struct PipeArgs {
     #[arg(short, long)]
     level: Option<String>,
-
-    /// Filter events by module name (e.g. dfir-evtx, recon-net)
     #[arg(short, long)]
     module: Option<String>,
 }
@@ -77,20 +84,58 @@ async fn main() {
     match cli.command {
         Commands::Pipe(args) => {
             OutputEvent::process_stdin(|event| {
-                let match_level = args
+                let matches_level = args
                     .level
                     .as_ref()
                     .map_or(true, |l| event.level.eq_ignore_ascii_case(l));
-                let match_module = args
+
+                let matches_module = args
                     .module
                     .as_ref()
                     .map_or(true, |m| event.module.eq_ignore_ascii_case(m));
 
-                if match_level && match_module {
+                if matches_level && matches_module {
                     event.print_ndjson();
                 }
             });
         }
+        Commands::Playbook(args) => match Playbook::load_from_file(&args.file) {
+            Ok(pb) => {
+                let start_event = OutputEvent::new(
+                    "playbook-runner",
+                    "INFO",
+                    serde_json::json!({
+                        "playbook": pb.name,
+                        "description": pb.description,
+                        "total_steps": pb.steps.len()
+                    }),
+                );
+                start_event.print_ndjson();
+
+                for (idx, step) in pb.steps.iter().enumerate() {
+                    let step_event = OutputEvent::new(
+                        "playbook-runner",
+                        "STEP",
+                        serde_json::json!({
+                            "step_index": idx + 1,
+                            "name": step.name,
+                            "module": step.module,
+                            "command": step.command,
+                            "args": step.args
+                        }),
+                    );
+                    step_event.print_ndjson();
+                }
+            }
+            Err(err) => {
+                let err_event = OutputEvent::new(
+                    "playbook-runner",
+                    "ERROR",
+                    serde_json::json!({ "error": err.to_string() }),
+                );
+                err_event.print_ndjson();
+            }
+        },
         Commands::Dfir(dfir) => match dfir.tool {
             DfirTools::Evtx {
                 source,
