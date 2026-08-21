@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::io::{self, BufRead};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct OutputEvent {
@@ -21,6 +22,25 @@ impl OutputEvent {
     pub fn print_ndjson(&self) {
         if let Ok(json) = serde_json::to_string(self) {
             println!("{}", json);
+        }
+    }
+
+    pub fn process_stdin<F>(mut handler: F)
+    where
+        F: FnMut(OutputEvent),
+    {
+        let stdin = io::stdin();
+        let handle = stdin.lock();
+
+        for line in handle.lines() {
+            if let Ok(line_content) = line {
+                if line_content.trim().is_empty() {
+                    continue;
+                }
+                if let Ok(event) = serde_json::from_str::<OutputEvent>(&line_content) {
+                    handler(event);
+                }
+            }
         }
     }
 }

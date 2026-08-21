@@ -15,6 +15,17 @@ struct Cli {
 enum Commands {
     Dfir(DfirArgs),
     Recon(ReconArgs),
+    Pipe(PipeArgs),
+}
+
+#[derive(Args)]
+pub struct PipeArgs {
+    #[arg(short, long)]
+    level: Option<String>,
+
+    /// Filter events by module name (e.g. dfir-evtx, recon-net)
+    #[arg(short, long)]
+    module: Option<String>,
 }
 
 #[derive(Args)]
@@ -64,6 +75,22 @@ async fn main() {
     let cli = Cli::parse();
 
     match cli.command {
+        Commands::Pipe(args) => {
+            OutputEvent::process_stdin(|event| {
+                let match_level = args
+                    .level
+                    .as_ref()
+                    .map_or(true, |l| event.level.eq_ignore_ascii_case(l));
+                let match_module = args
+                    .module
+                    .as_ref()
+                    .map_or(true, |m| event.module.eq_ignore_ascii_case(m));
+
+                if match_level && match_module {
+                    event.print_ndjson();
+                }
+            });
+        }
         Commands::Dfir(dfir) => match dfir.tool {
             DfirTools::Evtx {
                 source,
