@@ -75,7 +75,6 @@ async fn main() {
                     .map(|t| t.path.as_str())
                     .unwrap_or("evtx_dump.exe");
 
-
                 let start_event = OutputEvent::new(
                     "dfir-evtx",
                     "INFO",
@@ -87,8 +86,9 @@ async fn main() {
                 );
                 start_event.print_ndjson();
 
-
-                if let Err(err) = dfir_evtx::run_evtx_dump(evtx_binary, &source, critical_only).await {
+                if let Err(err) =
+                    dfir_evtx::run_evtx_dump(evtx_binary, &source, critical_only).await
+                {
                     let err_event = OutputEvent::new(
                         "dfir-evtx",
                         "ERROR",
@@ -106,17 +106,25 @@ async fn main() {
                     .map(|t| t.path.as_str())
                     .unwrap_or("nmap.exe");
 
-                let event = OutputEvent::new(
+                let start_event = OutputEvent::new(
                     "recon-net",
                     "INFO",
                     serde_json::json!({
-                        "action": "scan_start",
+                        "status": "starting",
                         "target": target,
-                        "ports": ports,
-                        "binary_used": scanner_binary
+                        "ports": ports
                     }),
                 );
-                event.print_ndjson();
+                start_event.print_ndjson();
+
+                if let Err(err) = recon_net::run_port_scan(scanner_binary, &target, &ports).await {
+                    let err_event = OutputEvent::new(
+                        "recon-net",
+                        "ERROR",
+                        serde_json::json!({ "error": err.to_string() }),
+                    );
+                    err_event.print_ndjson();
+                }
             }
         },
     }
