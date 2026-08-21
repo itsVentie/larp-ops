@@ -483,6 +483,7 @@ dependencies = [
  "anyhow",
  "clap",
  "config",
+ "dfir-evtx",
  "directories",
  "serde",
  "serde_json",

@@ -23,3 +23,4 @@ anyhow = "1.0"
 config = "0.14"
 directories = "5.0"
 shared-types = { path = "crates/shared-types" }
+dfir-evtx = { path = "crates/dfir-evtx" }

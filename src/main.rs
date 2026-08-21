@@ -75,17 +75,27 @@ async fn main() {
                     .map(|t| t.path.as_str())
                     .unwrap_or("evtx_dump.exe");
 
-                let event = OutputEvent::new(
+
+                let start_event = OutputEvent::new(
                     "dfir-evtx",
                     "INFO",
                     serde_json::json!({
-                        "action": "triage_start",
+                        "status": "starting",
                         "source": source,
-                        "critical_only": critical_only,
-                        "binary_used": evtx_binary
+                        "critical_only": critical_only
                     }),
                 );
-                event.print_ndjson();
+                start_event.print_ndjson();
+
+
+                if let Err(err) = dfir_evtx::run_evtx_dump(evtx_binary, &source, critical_only).await {
+                    let err_event = OutputEvent::new(
+                        "dfir-evtx",
+                        "ERROR",
+                        serde_json::json!({ "error": err.to_string() }),
+                    );
+                    err_event.print_ndjson();
+                }
             }
         },
         Commands::Recon(recon) => match recon.tool {
