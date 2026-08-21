@@ -94,7 +94,7 @@ larp-ops/
 * [x] DFIR artifact parsing wrappers (EVTX, RAM triage).
 * [x] Reconnaissance tool wrappers (Go/Rust port scanners).
 * [x] Inter-module piping (streaming stdout to stdin).
-* [ ] YAML playbook parser for multi-step tasks.
+* [x] YAML playbook parser for multi-step tasks.
 
 * [ ] TUI dashboard implementation via `ratatui`.
 * [ ] Shell completion generation (`bash`, `zsh`, `fish`).
