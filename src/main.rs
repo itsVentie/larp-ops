@@ -173,7 +173,7 @@ async fn main() {
             }
         },
         Commands::Tui => {
-            if let Err(err) = tui::run_dashboard() {
+            if let Err(err) = tui::run_dashboard().await {
                 eprintln!("[!] TUI Error: {}", err);
             }
         }

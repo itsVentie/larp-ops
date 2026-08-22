@@ -11,22 +11,65 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, Paragraph},
     Terminal,
 };
-use std::io;
+use shared_types::OutputEvent;
+use std::io::{self, BufRead};
+use tokio::sync::mpsc;
 
-pub fn run_dashboard() -> Result<()> {
+pub async fn run_dashboard() -> Result<()> {
+    let (tx, mut rx) = mpsc::channel::<OutputEvent>(100);
+
+    std::thread::spawn(move || {
+        let stdin = io::stdin();
+        let handle = stdin.lock();
+
+        for line in handle.lines().map_while(Result::ok) {
+            if line.trim().is_empty() {
+                continue;
+            }
+            if let Ok(event) = serde_json::from_str::<OutputEvent>(&line) {
+                if tx.blocking_send(event).is_err() {
+                    break;
+                }
+            }
+        }
+    });
+
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let logs = vec![
-        ListItem::new("[INFO] TUI initialized").style(Style::default().fg(Color::Green)),
-        ListItem::new("[READY] Listening for NDJSON events via pipeline...")
-            .style(Style::default().fg(Color::Cyan)),
-    ];
+    let mut logs: Vec<ListItem> =
+        vec![
+            ListItem::new("[READY] Listening for incoming NDJSON events via stdin...")
+                .style(Style::default().fg(Color::Cyan)),
+        ];
 
     loop {
+        while let Ok(event) = rx.try_recv() {
+            let color = match event.level.as_str() {
+                "ERROR" => Color::Red,
+                "STEP" => Color::Yellow,
+                "DISCOVERY" => Color::Magenta,
+                "RECORD" => Color::Green,
+                _ => Color::Cyan,
+            };
+
+            let formatted = format!(
+                "[{}] [{}] {}",
+                event.timestamp.get(11..19).unwrap_or("00:00:00"),
+                event.module,
+                serde_json::to_string(&event.payload).unwrap_or_default()
+            );
+
+            logs.push(ListItem::new(formatted).style(Style::default().fg(color)));
+
+            if logs.len() > 500 {
+                logs.remove(0);
+            }
+        }
+
         terminal.draw(|f| {
             let chunks = Layout::default()
                 .direction(Direction::Vertical)
@@ -48,7 +91,7 @@ pub fn run_dashboard() -> Result<()> {
             f.render_widget(list, chunks[1]);
         })?;
 
-        if event::poll(std::time::Duration::from_millis(100))? {
+        if event::poll(std::time::Duration::from_millis(50))? {
             if let Event::Key(key) = event::read()? {
                 if let KeyCode::Char('q') = key.code {
                     break;

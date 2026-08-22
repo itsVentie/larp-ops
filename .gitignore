@@ -27,3 +27,4 @@ config.local.yaml
 *.tmp
 *.evtx
 *.raw
+sample.yaml
