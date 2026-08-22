@@ -100,7 +100,7 @@ larp-ops/
 * [x] Shell completion generation (`bash`, `zsh`, `fish`).
 * [ ] Modular package downloader (`larp module install <name>`).
 
-* [ ] WASM plugin integration for isolated script execution.
+* [x] WASM plugin integration for isolated script execution.
 * [ ] Remote agent execution mode.
 
 ---
