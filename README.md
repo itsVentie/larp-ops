@@ -96,7 +96,7 @@ larp-ops/
 * [x] Inter-module piping (streaming stdout to stdin).
 * [x] YAML playbook parser for multi-step tasks.
 
-* [ ] TUI dashboard implementation via `ratatui`.
+* [x] TUI dashboard implementation via `ratatui`.
 * [ ] Shell completion generation (`bash`, `zsh`, `fish`).
 * [ ] Modular package downloader (`larp module install <name>`).
 
