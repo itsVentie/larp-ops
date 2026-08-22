@@ -2,10 +2,12 @@ mod config;
 mod playbook;
 mod tui;
 
-use clap::{Args, Parser, Subcommand};
+use clap::{Args, CommandFactory, Parser, Subcommand};
+use clap_complete::{generate, Shell};
 use config::AppConfig;
 use playbook::Playbook;
 use shared_types::OutputEvent;
+use std::io;
 
 #[derive(Parser)]
 #[command(name = "larp", version, about = "Orchestrator")]
@@ -21,6 +23,13 @@ enum Commands {
     Pipe(PipeArgs),
     Playbook(PlaybookArgs),
     Tui,
+    Completion(CompletionArgs),
+}
+
+#[derive(Args)]
+pub struct CompletionArgs {
+    #[arg(value_enum)]
+    shell: Shell,
 }
 
 #[derive(Args)]
@@ -84,6 +93,10 @@ async fn main() {
     let cli = Cli::parse();
 
     match cli.command {
+        Commands::Completion(args) => {
+            let mut cmd = Cli::command();
+            generate(args.shell, &mut cmd, "larp", &mut io::stdout());
+        }
         Commands::Pipe(args) => {
             OutputEvent::process_stdin(|event| {
                 let matches_level = args
