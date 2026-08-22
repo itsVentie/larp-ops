@@ -1,5 +1,6 @@
 mod config;
 mod playbook;
+mod tui;
 
 use clap::{Args, Parser, Subcommand};
 use config::AppConfig;
@@ -19,6 +20,7 @@ enum Commands {
     Recon(ReconArgs),
     Pipe(PipeArgs),
     Playbook(PlaybookArgs),
+    Tui,
 }
 
 #[derive(Args)]
@@ -170,6 +172,11 @@ async fn main() {
                 }
             }
         },
+        Commands::Tui => {
+            if let Err(err) = tui::run_dashboard() {
+                eprintln!("[!] TUI Error: {}", err);
+            }
+        }
         Commands::Recon(recon) => match recon.tool {
             ReconTools::Scan { target, ports } => {
                 let scanner_binary = config
