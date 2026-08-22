@@ -28,3 +28,4 @@ dfir-evtx = { path = "crates/dfir-evtx" }
 recon-net = { path = "crates/recon-net"}
 ratatui = "0.26"
 crossterm = "0.27"
+wasmtime = "19.0"

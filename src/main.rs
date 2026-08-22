@@ -1,6 +1,7 @@
 mod config;
 mod playbook;
 mod tui;
+mod wasm;
 
 use clap::{Args, CommandFactory, Parser, Subcommand};
 use clap_complete::{generate, Shell};
@@ -24,12 +25,19 @@ enum Commands {
     Playbook(PlaybookArgs),
     Tui,
     Completion(CompletionArgs),
+    Wasm(WasmArgs),
 }
 
 #[derive(Args)]
 pub struct CompletionArgs {
     #[arg(value_enum)]
     shell: Shell,
+}
+
+#[derive(Args)]
+pub struct WasmArgs {
+    #[arg(short, long)]
+    plugin: String,
 }
 
 #[derive(Args)]
@@ -93,6 +101,23 @@ async fn main() {
     let cli = Cli::parse();
 
     match cli.command {
+        Commands::Wasm(args) => {
+            OutputEvent::process_stdin(|event| match wasm::run_wasm_plugin(&args.plugin, &event) {
+                Ok(passed) => {
+                    if passed {
+                        event.print_ndjson();
+                    }
+                }
+                Err(err) => {
+                    let err_event = OutputEvent::new(
+                        "wasm-host",
+                        "ERROR",
+                        serde_json::json!({ "error": err.to_string() }),
+                    );
+                    err_event.print_ndjson();
+                }
+            });
+        }
         Commands::Completion(args) => {
             let mut cmd = Cli::command();
             generate(args.shell, &mut cmd, "larp", &mut io::stdout());
