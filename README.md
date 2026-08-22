@@ -97,7 +97,7 @@ larp-ops/
 * [x] YAML playbook parser for multi-step tasks.
 
 * [x] TUI dashboard implementation via `ratatui`.
-* [ ] Shell completion generation (`bash`, `zsh`, `fish`).
+* [x] Shell completion generation (`bash`, `zsh`, `fish`).
 * [ ] Modular package downloader (`larp module install <name>`).
 
 * [ ] WASM plugin integration for isolated script execution.
