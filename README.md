@@ -101,7 +101,7 @@ larp-ops/
 * [x] Modular package downloader (`larp module install <name>`).
 
 * [x] WASM plugin integration for isolated script execution.
-* [ ] Remote agent execution mode.
+* [x] Remote agent execution mode.
 
 ---
 
