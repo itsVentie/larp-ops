@@ -1,7 +1,9 @@
 mod config;
+mod installer;
 mod playbook;
 mod tui;
 mod wasm;
+mod agent;
 
 use clap::{Args, CommandFactory, Parser, Subcommand};
 use clap_complete::{generate, Shell};
@@ -26,12 +28,42 @@ enum Commands {
     Tui,
     Completion(CompletionArgs),
     Wasm(WasmArgs),
+    Module(ModuleArgs),
+    Agent(AgentArgs),
+    Remote(RemoteArgs),
+}
+
+#[derive(Args)]
+pub struct AgentArgs {
+    /// Address and port to bind the agent server to (e.g. 0.0.0.0:8080)
+    #[arg(short, long, default_value = "127.0.0.1:8080")]
+    bind: String,
+}
+
+#[derive(Args)]
+pub struct RemoteArgs {
+    #[arg(short, long, default_value = "http://127.0.0.1:8080")]
+    target: String,
+
+    #[arg(short, long)]
+    file: String,
+}
+
+#[derive(Args)]
+pub struct ModuleArgs {
+    #[command(subcommand)]
+    pub action: ModuleCommands,
 }
 
 #[derive(Args)]
 pub struct CompletionArgs {
     #[arg(value_enum)]
     shell: Shell,
+}
+
+#[derive(Subcommand)]
+pub enum ModuleCommands {
+    Install { name: String },
 }
 
 #[derive(Args)]
@@ -101,6 +133,23 @@ async fn main() {
     let cli = Cli::parse();
 
     match cli.command {
+        Commands::Agent(args) => {
+            if let Err(err) = agent::run_agent_server(&args.bind).await {
+                eprintln!("[!] Agent Server Error: {}", err);
+            }
+        }
+        Commands::Remote(args) => {
+            if let Err(err) = agent::run_remote_client(&args.target, &args.file).await {
+                eprintln!("[!] Remote Execution Error: {}", err);
+            }
+        }
+        Commands::Module(args) => match args.action {
+            ModuleCommands::Install { name } => {
+                if let Err(err) = installer::install_module(&name).await {
+                    eprintln!("[!] Module install error: {}", err);
+                }
+            }
+        },
         Commands::Wasm(args) => {
             OutputEvent::process_stdin(|event| match wasm::run_wasm_plugin(&args.plugin, &event) {
                 Ok(passed) => {
