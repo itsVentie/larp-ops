@@ -98,7 +98,7 @@ larp-ops/
 
 * [x] TUI dashboard implementation via `ratatui`.
 * [x] Shell completion generation (`bash`, `zsh`, `fish`).
-* [ ] Modular package downloader (`larp module install <name>`).
+* [x] Modular package downloader (`larp module install <name>`).
 
 * [x] WASM plugin integration for isolated script execution.
 * [ ] Remote agent execution mode.
