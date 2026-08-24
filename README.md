@@ -1,110 +1,206 @@
 # LarpOps 
 
-A modular CLI orchestrator written in Rust for Red Team and DFIR workflows. It wraps external binaries, scripts, and internal crates into a single, structured interface to standardize execution flags and data output.
+**LarpOps** is a modular, high-performance SecOps orchestrator built in Rust. Designed for Incident Response (DFIR) and Network Reconnaissance, it establishes a unified UNIX-style **NDJSON** streaming pipeline between CLI modules, a WASM runtime sandbox, remote agents, and a real-time terminal UI.
+
+---
+
+## Architecture Overview
+
+LarpOps uses a Cargo workspace to ensure isolated builds, clear boundary enforcement, and fast execution:
+
+* **`larp` (Core Engine):** CLI dispatcher, playbook execution runner, and stream router.
+* **`shared-types`:** Shared NDJSON data schema (`OutputEvent`) and stream IO handlers.
+* **`dfir-evtx`:** DFIR artifact ingestion wrapper (Windows Event Logs).
+* **`recon-net`:** Network discovery & port scanning execution wrapper.
+
+
+```
+
+```
+              +-----------------------------------+
+              |   Playbook Engine / Remote Client |
+              +-----------------+-----------------+
+                                | (NDJSON Stream)
+                                v
+
+```
+
++------------------+      +------------------+      +------------------+
+|   dfir-evtx      | ---> |    larp pipe     | ---> |   ratatui TUI    |
+|   recon-net      |      |   (Filter/WASM)  |      |   Dashboard      |
++------------------+      +------------------+      +------------------+
+|
+v
++------------------+
+|  Remote Agent    |
+|  (HTTP Stream)   |
++------------------+
+
+```
 
 ---
 
 ## Features
 
-* **Modular Workspace**: Structured as a Cargo workspace where each tool or integration exists as an isolated crate.
-* **Process Wrapping**: Executes Go, Python, Bash, or Rust binaries via sub-processes, handling argument mapping transparently.
-* **Structured Output**: Standardizes stdout/stderr across tools using NDJSON (JSON Lines) for unix piping (`|`).
-* **Declarative Configuration**: Centralized `config.yaml` for managing tool paths, default parameters, and environment settings.
-* **Zero External Dependencies**: Compiles to a single static binary for Linux (`musl`) and Windows.
+- ** NDJSON Pipeline:** Inter-process communication via structured, newline-delimited JSON.
+- ** YAML Playbooks:** Declarative task sequence definitions with argument propagation.
+- ** Real-time TUI:** Interactive event stream monitoring built with `ratatui` and `crossterm`.
+- ** WASM Engine:** Isolated security plugin sandbox powered by `wasmtime`.
+- **📡 Remote Agent (RAEM):** High-throughput execution server with streaming responses via `axum`.
+- ** Package Installer:** Built-in downloader for external security tool binaries (`larp module install`).
 
 ---
 
-## Installation
+## Installation & Building
 
-### Pre-compiled Binary
-Download the latest release binary for your platform from the [Releases](https://github.com/username/larp-ops/releases) page and place it in your `$PATH`.
+### Prerequisites
+
+- **Rust:** `1.75.0` or higher
+- **Cargo Target Dir (Optional):** Ensure permissions if `CARGO_TARGET_DIR` is set.
 
 ### Build from Source
-Requires Rust (1.75+ recommended):
 
-```bash
-git clone [https://github.com/itsventie/larp-ops.git](https://github.com/itsventie/larp-ops.git)
-cd larp-ops
+```powershell
+# Clone repository
+git clone [https://github.com/itsVentie/LarpOps.git](https://github.com/itsVentie/LarpOps.git)
+cd LarpOps
+
+# Build workspace in debug mode
+cargo build
+
+# Build optimized release binary
 cargo build --release
 
 ```
 
-The resulting binary will be at `target/release/larp`.
-
 ---
 
-## Usage
+## Usage Guide
 
-```bash
-# General syntax
-larp <subcommand> [options]
+### 1. Execute Playbooks
 
-# Example: Run EVTX triage wrapper
-larp dfir triage --source /path/to/system.evtx --severity critical
-
-# Example: Run network reconnaissance wrapper
-larp recon scan --target 192.168.1.0/24 --ports 80,443,8080
-
-# Pipe structured NDJSON output into jq or other tools
-larp dfir triage --source /path/to/system.evtx | jq '.records[]'
-
-```
-
----
-
-## Configuration
-
-`larp` checks `~/.config/larp/config.yaml` (or `%APPDATA%\larp\config.yaml` on Windows) for binary locations and global options:
+Define your sequence in YAML:
 
 ```yaml
-tools:
-  evtx_dump:
-    path: "/usr/local/bin/evtx_dump"
-    timeout: 300
-  scanner:
-    path: "./tools/go_scanner"
-    timeout: 60
+name: "Incident Triage & Recon"
+description: "Run EVTX analysis followed by network discovery"
+steps:
+  - name: "Parse System EVTX Logs"
+    module: "dfir-evtx"
+    command: "evtx"
+    args:
+      - "--source"
+      - "C:\\Windows\\System32\\winevt\\Logs\\System.evtx"
+      - "--critical-only"
+
+  - name: "Gateway Network Scan"
+    module: "recon-net"
+    command: "scan"
+    args:
+      - "--target"
+      - "192.168.1.1"
+      - "--ports"
+      - "80,443,22"
+
+```
+
+Run the playbook:
+
+```powershell
+cargo run -- playbook --file sample.yaml
 
 ```
 
 ---
 
-## Project Structure
+### 2. Stream into Real-Time TUI Dashboard
 
-```text
-larp-ops/
-├── Cargo.toml          # Workspace manifest
-├── src/                # Core orchestrator and CLI parser (`clap`)
-└── crates/
-    ├── dfir-evtx/      # EVTX parsing module wrapper
-    ├── recon-net/      # Network scanning module wrapper
-    └── shared-types/   # Common JSON schema structs and errors
+Pipe any NDJSON event generator straight into the Ratatui monitor:
+
+```powershell
+cargo run --quiet -- playbook --file sample.yaml | cargo run --quiet -- tui
 
 ```
 
 ---
 
-## Roadmap
+### 3. Remote Agent Execution Mode (RAEM)
 
-* [x] Cargo workspace initialization and core CLI parser (`clap`).
-* [x] Process execution manager (`std::process::Command` / `tokio::process`).
-* [x] Global configuration loader (`config.yaml`).
-* [x] NDJSON logging and stdout formatting layer.
+**Start Agent (Target Server):**
 
-* [x] DFIR artifact parsing wrappers (EVTX, RAM triage).
-* [x] Reconnaissance tool wrappers (Go/Rust port scanners).
-* [x] Inter-module piping (streaming stdout to stdin).
-* [x] YAML playbook parser for multi-step tasks.
+```powershell
+larp agent --bind 0.0.0.0:8080
 
-* [x] TUI dashboard implementation via `ratatui`.
-* [x] Shell completion generation (`bash`, `zsh`, `fish`).
-* [x] Modular package downloader (`larp module install <name>`).
+```
 
-* [x] WASM plugin integration for isolated script execution.
-* [x] Remote agent execution mode.
+**Dispatch Playbook (Controller Client):**
+
+```powershell
+larp remote --target [http://192.168.1.50:8080](http://192.168.1.50:8080) --file sample.yaml | larp tui
+
+```
+
+---
+
+### 4. Sandbox Event Inspection with WASM
+
+Run an isolated `.wasm` security inspection filter over the pipeline:
+
+```powershell
+larp playbook --file sample.yaml | larp wasm --plugin ./filters/alert_rules.wasm
+
+```
+
+---
+
+### 5. Install Binary Dependencies
+
+Fetch binary tools directly to your local workspace:
+
+```powershell
+larp module install evtx_dump
+larp module install nmap
+
+```
+
+---
+
+### 6. Shell Completions
+
+Generate auto-completion scripts for your favorite shell:
+
+```powershell
+# PowerShell (current session)
+larp completion powershell | Out-String | Invoke-Expression
+
+# Bash / Zsh
+larp completion bash > /etc/bash_completion.d/larp
+
+```
+
+---
+
+## Data Schema (`OutputEvent`)
+
+Every event printed by LarpOps strictly adheres to the standard schema:
+
+```json
+{
+  "module": "playbook-runner",
+  "timestamp": "2026-08-21T16:41:41.285405100+00:00",
+  "level": "STEP",
+  "payload": {
+    "name": "Parse System EVTX Logs",
+    "module": "dfir-evtx",
+    "command": "evtx",
+    "step_index": 1
+  }
+}
+
+```
 
 ---
 
 ## License
 
-MIT
+Distributed under the **MIT License**. See `LICENSE` for more details.
