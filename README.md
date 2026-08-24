@@ -201,6 +201,31 @@ Every event printed by LarpOps strictly adheres to the standard schema:
 
 ---
 
+## Roadmap (Phase 5 – Phase 7)
+
+### Phase 5: WASM Plugin SDK & Ecosystem Expansion
+
+* [ ] **LarpOps Plugin SDK (`larp-plugin-sdk`):** Develop a dedicated Rust/C crate providing procedural macros (e.g., `#[larp_plugin]`) for automated NDJSON memory management and serialization.
+* [ ] **Threat Intel Engine (Sigma & YARA):** Implement WASM sandboxes pre-compiled with YARA rule matching for binary analysis and Sigma rule evaluation for structured event logs.
+* [ ] **Expanded Native Modules:**
+* [ ] `dfir-mft`: High-speed Master File Table (MFT) parsing piped to NDJSON.
+* [ ] `recon-dns`: Asynchronous DNS brute-forcing and subdomain enumeration.
+
+
+
+### Phase 6: Enterprise Remote Agent (RAEM) Hardening
+
+* [ ] **mTLS Authentication & Encryption:** Enforce mutual TLS authentication with client/server certificate validation for agent-controller communication.
+* [ ] **Stream Compression:** Integrate real-time `zstd`/`gzip` compression over `axum` HTTP streams to optimize bandwidth across WAN networks.
+* [ ] **Persistence & Daemon Mode:** Implement background service capabilities (Windows Service and `systemd` unit generation) with heartbeat monitoring.
+
+### Phase 7: Analytics, Storage & Web UI
+
+* [ ] **SIEM & DB Storage Drivers:** Enable direct sink connectors to route NDJSON event streams into **ClickHouse**, **Elasticsearch**, or local **SQLite** databases.
+* [ ] **Real-time Web Dashboard:** Build a Web UI alternative powered by `Axum` and WebSockets for incident timelines and graph visualization.
+
+---
+
 ## License
 
 Distributed under the **MIT License**. See `LICENSE` for more details.
