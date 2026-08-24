@@ -42,12 +42,12 @@ v
 
 ## Features
 
-- ** NDJSON Pipeline:** Inter-process communication via structured, newline-delimited JSON.
-- ** YAML Playbooks:** Declarative task sequence definitions with argument propagation.
-- ** Real-time TUI:** Interactive event stream monitoring built with `ratatui` and `crossterm`.
-- ** WASM Engine:** Isolated security plugin sandbox powered by `wasmtime`.
-- **📡 Remote Agent (RAEM):** High-throughput execution server with streaming responses via `axum`.
-- ** Package Installer:** Built-in downloader for external security tool binaries (`larp module install`).
+- **NDJSON Pipeline:** Inter-process communication via structured, newline-delimited JSON.
+- **YAML Playbooks:** Declarative task sequence definitions with argument propagation.
+- **Real-time TUI:** Interactive event stream monitoring built with `ratatui` and `crossterm`.
+- **WASM Engine:** Isolated security plugin sandbox powered by `wasmtime`.
+- **Remote Agent (RAEM):** High-throughput execution server with streaming responses via `axum`.
+- **Package Installer:** Built-in downloader for external security tool binaries (`larp module install`).
 
 ---
 
