@@ -1,4 +1,4 @@
-use shared_types::OutputEvent;
+pub use shared_types::OutputEvent;
 
 pub trait LarpPlugin {
     fn filter(&mut self, event: &OutputEvent) -> bool;

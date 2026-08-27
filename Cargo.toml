@@ -5,6 +5,7 @@ members = [
     "crates/dfir-evtx",
     "crates/recon-net",
     "crates/plugin-sdk",
+    "plugins/sample-filter",
 ]
 resolver = "2"
 
