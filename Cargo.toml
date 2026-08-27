@@ -4,6 +4,7 @@ members = [
     "crates/shared-types",
     "crates/dfir-evtx",
     "crates/recon-net",
+    "crates/plugin-sdk",
 ]
 resolver = "2"
 
