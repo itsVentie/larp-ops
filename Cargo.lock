@@ -3406,6 +3406,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "yara-sigma-plugin"
+version = "0.1.0"
+dependencies = [
+ "plugin-sdk",
+ "serde",
+ "serde_json",
+ "shared-types",
+]
+
+[[package]]
 name = "yoke"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"

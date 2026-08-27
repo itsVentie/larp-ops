@@ -6,6 +6,7 @@ members = [
     "crates/recon-net",
     "crates/plugin-sdk",
     "plugins/sample-filter",
+    "plugins/yara-sigma-plugin",
 ]
 resolver = "2"
 
