@@ -206,7 +206,7 @@ Every event printed by LarpOps strictly adheres to the standard schema:
 ### Phase 5: WASM Plugin SDK & Ecosystem Expansion
 
 * [x] **LarpOps Plugin SDK (`plugin-sdk`):** Develop a dedicated Rust/C crate providing procedural macros (e.g., `#[larp_plugin]`) for automated NDJSON memory management and serialization.
-* [ ] **Threat Intel Engine (Sigma & YARA):** Implement WASM sandboxes pre-compiled with YARA rule matching for binary analysis and Sigma rule evaluation for structured event logs.
+* [x] **Threat Intel Engine (Sigma & YARA):** Implement WASM sandboxes pre-compiled with YARA rule matching for binary analysis and Sigma rule evaluation for structured event logs.
 * [ ] **Expanded Native Modules:**
 * [ ] `dfir-mft`: High-speed Master File Table (MFT) parsing piped to NDJSON.
 * [ ] `recon-dns`: Asynchronous DNS brute-forcing and subdomain enumeration.
